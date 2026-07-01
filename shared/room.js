@@ -24,7 +24,7 @@ window.RoomManager = class RoomManager {
 
   joinRoom(code, name) {
     this.roomCode = code.toUpperCase()
-    this.playerName = name || 'Игрок'
+    this.playerName = name || 'user_'
     this.isHost = false
     this.members = []
     this._openChannel()
@@ -68,7 +68,12 @@ window.RoomManager = class RoomManager {
       case 'hello':
         if (this.isHost && msg.playerId !== this.playerId) {
           if (!this.members.find(m => m.id === msg.playerId)) {
-            this.members.push({ id: msg.playerId, name: msg.name, isHost: false })
+            let name = msg.name
+            if (!name || name === 'user_') {
+              const userCount = this.members.filter(m => !m.isHost).length + 1
+              name = 'user_' + userCount
+            }
+            this.members.push({ id: msg.playerId, name, isHost: false })
             this._broadcast({ type: 'room-info', code: this.roomCode, members: this.members })
             if (this.onMembersChange) this.onMembersChange(this.members)
           }

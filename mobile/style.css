@@ -683,3 +683,53 @@ body {
   color: var(--text-3);
   font-size: 10px;
 }
+
+/* Start screen room buttons */
+.start-room { margin-top: 20px; }
+.start-room-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--text-3);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.start-room-divider::before,
+.start-room-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.start-room-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Room players list */
+.room-players {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.room-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.room-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.room-dot-you { background: var(--green); }
+.room-dot-other { background: var(--accent); }
+.room-player-name { flex: 1; font-size: 14px; font-weight: 500; }
+.room-player-tag { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }

@@ -78,6 +78,13 @@ function renderStartScreen() {
         <div class="logo-select" id="logo-select"></div>
         <button id="btn-start" class="btn-primary anim-glow" disabled>Начать игру</button>
       </div>
+      <div class="start-room anim-fade-up" style="animation-delay:0.55s">
+        <div class="start-room-divider"><span>или</span></div>
+        <div class="start-room-buttons">
+          <button class="btn-primary" onclick="startScreenCreateRoom()">+ Создать комнату</button>
+          <button class="btn-secondary" onclick="startScreenJoinRoom()">Присоединиться</button>
+        </div>
+      </div>
       <div class="start-footer anim-fade-up" style="animation-delay:0.6s">
         <span>made with ☕ & ⌨️</span>
       </div>
@@ -357,6 +364,20 @@ function renderProjectStatus(el, proj) {
       }
     </div>` : ''
 
+  const roomPlayersHtml = room.roomCode ? `
+    <div class="card" style="margin-top:12px">
+      <h3>🎮 Игроки в комнате (${room.members.length})</h3>
+      <div class="room-players">
+        ${room.members.map(m => `
+          <div class="room-player-row">
+            <span class="room-player-dot ${m.id === room.playerId ? 'room-dot-you' : 'room-dot-other'}"></span>
+            <span class="room-player-name">${m.name}</span>
+            <span class="room-player-tag">${m.isHost ? 'Хост' : 'Игрок'}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''
+
   el.innerHTML = `
     <div class="screen-header">
       <h2>Разработка</h2>
@@ -410,6 +431,7 @@ function renderProjectStatus(el, proj) {
       ${assignedEl || '<p class="empty-state">Никто не назначен</p>'}
       ${unassignedEl ? '<h3 style="font-size:13px;color:var(--text-2);margin:12px 0 8px">Свободные сотрудники</h3>' + unassignedEl : ''}
     </div>
+    ${roomPlayersHtml}
     ${codePanel}
   `
 }
@@ -777,6 +799,62 @@ document.getElementById('modal-overlay').addEventListener('click', e => {
 })
 
 /* Room functions */
+function startScreenCreateRoom() {
+  const modal = document.getElementById('modal-overlay')
+  const content = document.getElementById('modal-content')
+  content.innerHTML = `
+    <h2>Создать комнату</h2>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:12px">Игра начнётся автоматически, игроки смогут присоединиться через ту же вкладку браузера</p>
+    <label style="display:block;margin-bottom:6px;font-size:12px;color:var(--text-2)">Ваше имя</label>
+    <input type="text" id="room-name-input" class="room-name-input" value="Хост" maxlength="20" placeholder="Хост">
+    <button class="btn-primary" onclick="startScreenCreateRoomSubmit()" style="margin-top:12px">Создать и играть</button>
+  `
+  modal.classList.remove('modal-hidden')
+}
+
+function startScreenCreateRoomSubmit() {
+  const name = (document.getElementById('room-name-input')?.value || '').trim() || 'Хост'
+  if (!game.studioName) {
+    game.startStudio('Студия ' + name, Math.floor(Math.random() * 4), 50000)
+  }
+  room.createRoom(name)
+  document.getElementById('modal-overlay').classList.add('modal-hidden')
+  renderSidebar()
+  renderDashboard()
+  showScreen('dashboard')
+  setupRoomSync()
+}
+
+function startScreenJoinRoom() {
+  const modal = document.getElementById('modal-overlay')
+  const content = document.getElementById('modal-content')
+  content.innerHTML = `
+    <h2>Присоединиться к комнате</h2>
+    <label style="display:block;margin-bottom:6px;font-size:12px;color:var(--text-2)">Код комнаты</label>
+    <input type="text" id="room-code-input" class="room-name-input room-code-input" placeholder="ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:0.15em;font-size:20px;text-align:center;padding:14px">
+    <label style="display:block;margin:12px 0 6px;font-size:12px;color:var(--text-2)">Ваше имя (необязательно)</label>
+    <input type="text" id="room-name-input" class="room-name-input" value="" maxlength="20" placeholder="user_...">
+    <button class="btn-primary" onclick="startScreenJoinRoomSubmit()" style="margin-top:12px">Присоединиться</button>
+    <p style="font-size:11px;color:var(--text-3);margin-top:8px">Если не указать имя, будет автоматически сгенерировано (user_1, user_2...)</p>
+  `
+  modal.classList.remove('modal-hidden')
+}
+
+function startScreenJoinRoomSubmit() {
+  const code = (document.getElementById('room-code-input')?.value || '').trim().toUpperCase()
+  const name = (document.getElementById('room-name-input')?.value || '').trim()
+  if (code.length < 4) { showModal('Ошибка', 'Код должен содержать минимум 4 символа'); return }
+  if (!game.studioName) {
+    game.startStudio('Гость', Math.floor(Math.random() * 4), 50000)
+  }
+  room.joinRoom(code, name)
+  document.getElementById('modal-overlay').classList.add('modal-hidden')
+  renderSidebar()
+  renderDashboard()
+  showScreen('dashboard')
+  setupRoomSync()
+}
+
 function showRoomModal(type) {
   const modal = document.getElementById('modal-overlay')
   const content = document.getElementById('modal-content')
@@ -838,7 +916,11 @@ function setupRoomSync() {
     }
   }
   room.onMembersChange = () => {
-    renderDashboard()
+    const active = document.querySelector('.screen.active')
+    if (active) {
+      const id = active.id.replace('screen-', '')
+      renderScreen(id)
+    }
   }
   room.onHostLeave = () => {
     _roomState = null
