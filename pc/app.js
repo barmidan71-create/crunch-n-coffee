@@ -34,23 +34,30 @@ function showScreen(id) {
 }
 
 function initNav() {
-  const navItems = [
-    { id: 'dashboard', label: 'Панель', icon: 'chart' },
-    { id: 'team', label: 'Команда', icon: 'users' },
-    { id: 'project', label: 'Проект', icon: 'gamepad' },
-    { id: 'hire', label: 'Найм', icon: 'team' },
-    { id: 'history', label: 'История', icon: 'document' }
-  ]
-  const nav = document.getElementById('nav')
-  nav.innerHTML = navItems.map(n => `
-    <button class="nav-btn${n.id === 'dashboard' ? ' active' : ''}" data-screen="${n.id}">
-      ${genIcon(n.icon, 18)} ${n.label}
-    </button>
-  `).join('')
-  nav.addEventListener('click', e => {
+  document.getElementById('nav').addEventListener('click', e => {
     const btn = e.target.closest('.nav-btn')
     if (btn) showScreen(btn.dataset.screen)
   })
+}
+
+function renderNav() {
+  const inRoom = !!room.roomCode
+  const navItems = [
+    { id: 'dashboard', label: 'Панель', icon: 'chart' },
+    { id: 'players', label: 'Игроки', icon: 'users' },
+    { id: 'team', label: 'Команда', icon: 'team' },
+    { id: 'project', label: 'Проект', icon: 'gamepad' },
+    { id: 'hire', label: 'Найм', icon: 'plus' },
+    { id: 'history', label: 'История', icon: 'document' }
+  ]
+  const activeId = document.querySelector('.nav-btn.active')?.dataset?.screen || 'dashboard'
+  const nav = document.getElementById('nav')
+  nav.innerHTML = navItems.map(n => {
+    if (n.id === 'players' && !inRoom) return ''
+    return `<button class="nav-btn${n.id === activeId ? ' active' : ''}" data-screen="${n.id}">
+      ${genIcon(n.icon, 18)} ${n.label}
+    </button>`
+  }).join('')
 }
 
 function renderStartScreen() {
@@ -135,6 +142,7 @@ function renderStartScreen() {
 
 /* Nav + Sidebar */
 function renderSidebar() {
+  renderNav()
   const s = gs()
   const brand = document.getElementById('studio-brand')
   brand.innerHTML = `
@@ -541,6 +549,7 @@ function updateEstimate() {
   btn.onclick = () => {
     if (room.roomCode && !room.isHost) { showModal('Доступ запрещён', 'Только хост может создавать проекты'); return }
     game.createProject(genreId, gfxId, platId, scopeId)
+    if (room.isHost) room.broadcastState(game.getStatus())
     renderSidebar()
     renderProjectScreen()
     renderDashboard()
@@ -781,11 +790,61 @@ function showModal(title, bodyHtml) {
 }
 
 /* Screen routing */
+function renderPlayersScreen() {
+  const el = document.getElementById('screen-players')
+  if (!room.roomCode) {
+    el.innerHTML = '<div class="screen-header"><h2>Игроки</h2></div><div class="card"><p class="empty-state">Вы не в комнате</p><div style="display:flex;gap:10px;margin-top:12px"><button class="btn-primary" onclick="showRoomModal(\'create\')">+ Создать комнату</button><button class="btn-secondary" onclick="showRoomModal(\'join\')">Присоединиться</button></div></div>'
+    return
+  }
+  el.innerHTML = `
+    <div class="screen-header">
+      <h2>🎮 Игроки в комнате</h2>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="copyRoomCode()">📋 Копировать код</button>
+        <button class="btn-danger" onclick="leaveRoom()">Выйти</button>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Код комнаты</div>
+      <div style="font-family:var(--mono);font-size:32px;font-weight:700;color:var(--accent);letter-spacing:6px">${room.roomCode}</div>
+    </div>
+    <div class="card">
+      <h3>Участники (${room.members.length})</h3>
+      <div class="room-players" style="margin-top:8px">
+        ${room.members.map(m => `
+          <div class="room-player-row">
+            <span class="room-player-dot ${m.id === room.playerId ? 'room-dot-you' : 'room-dot-other'}"></span>
+            ${genAvatar(m.name, 32)}
+            <span class="room-player-name">${m.name}</span>
+            <span class="room-player-tag" style="background:${m.isHost ? 'var(--accent-dim)' : 'var(--surface-3)'};color:${m.isHost ? 'var(--accent)' : 'var(--text-2)'};padding:2px 10px;border-radius:99px">${m.isHost ? 'Хост' : 'Игрок'}</span>
+            ${m.id === room.playerId ? '<span style="font-size:10px;color:var(--green)">это вы</span>' : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Как играть</h3>
+      <ol style="font-size:13px;color:var(--text-2);line-height:1.8;padding-left:18px">
+        <li>Хост управляет игрой: создаёт проект, нанимает, завершает недели</li>
+        <li>Гости открывают <strong>Проект</strong> и кликают по сотрудникам — появляется задача с кодом</li>
+        <li>Гости перепечатывают код в редакторе — это помогает команде</li>
+        <li>Все изменения синхронизируются между вкладками</li>
+      </ol>
+    </div>
+  `
+}
+
+function copyRoomCode() {
+  navigator.clipboard?.writeText(room.roomCode)
+  showModal('Скопировано', 'Код комнаты: <strong>' + room.roomCode + '</strong>')
+}
+
 function renderScreen(id) {
   switch(id) {
     case 'dashboard': renderDashboard(); break
     case 'project': renderProjectScreen(); break
     case 'team': renderTeamScreen(); break
+    case 'players': renderPlayersScreen(); break
     case 'hire': renderHireScreen(); break
     case 'history': renderHistoryScreen(); break
   }
