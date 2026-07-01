@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crunch & Coffee — Game Dev Simulator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#c0c0c0;font-family:system-ui,-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100dvh;overflow:hidden}
+.container{text-align:center;padding:2rem}
+h1{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:300;letter-spacing:.15em;text-transform:uppercase;color:#e0e0e0;margin-bottom:.5rem}
+.sub{color:#888;font-size:.85rem;margin-bottom:2.5rem;letter-spacing:.05em}
+.links{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+.links a{display:inline-flex;align-items:center;gap:.6rem;padding:.75rem 1.75rem;border:1px solid #333;border-radius:4px;color:#c0c0c0;text-decoration:none;font-size:.9rem;transition:all .2s;background:transparent}
+.links a:hover{border-color:#666;color:#fff;background:rgba(255,255,255,.03)}
+.links a svg{width:18px;height:18px;fill:currentColor;flex-shrink:0}
+@media(max-width:600px){.links a{width:100%;justify-content:center}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Crunch &amp; Coffee</h1>
+  <div class="sub">Game Dev Simulator</div>
+  <div class="links">
+    <a href="pc/">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/></svg>
+      PC
+    </a>
+    <a href="mobile/">
+      <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="18" x2="12.01" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Mobile
+    </a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crunch & Coffee — Game Dev Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="studio-brand"></div>
+    <nav id="nav"></nav>
+    <div id="sidebar-footer">
+      <div id="quick-budget"></div>
+      <div id="quick-week"></div>
+    </div>
+  </div>
+  <main id="content">
+    <div id="screen-start" class="screen active"></div>
+    <div id="screen-dashboard" class="screen"></div>
+    <div id="screen-project" class="screen"></div>
+    <div id="screen-team" class="screen"></div>
+    <div id="screen-hire" class="screen"></div>
+    <div id="screen-history" class="screen"></div>
+  </main>
+</div>
+<div id="modal-overlay" class="modal-hidden">
+  <div class="modal" id="modal-content"></div>
+</div>
+<script src="../shared/svg.js"></script>
+<script src="../shared/data.js"></script>
+<script src="../shared/game.js"></script>
+<script src="../shared/editor.js"></script>
+<script src="../shared/room.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
